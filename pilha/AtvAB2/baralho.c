@@ -90,13 +90,18 @@ int etapa(Pilha* pilhaA, Pilha* pilhaB){
     //Embaralha
     shufflePilha(pilhaA);
     shufflePilha(pilhaB);
-    if (peek(pilhaA)>peek(pilhaB)){
+    int escolhaA, escolhaB;
+    escolhaA = peek(pilhaA);
+    escolhaB = peek(pilhaB);
+    printf("Escolha do jogador A: %d\n", escolhaA);
+    printf("Escolha do jogador B: %d\n", escolhaB);
+    if (escolhaA>escolhaB){
         pop(pilhaB);
         shufflePilha(pilhaA);
         shufflePilha(pilhaB);
         return 1;
     }
-    else if (peek(pilhaA)<peek(pilhaB)){
+    else if (escolhaA<escolhaB){
         pop(pilhaA);
         shufflePilha(pilhaA);
         shufflePilha(pilhaB);
@@ -123,10 +128,16 @@ void jogo(){
     preenchePilha(pilhaA, n); //Preenche as pilhas 
     preenchePilha(pilhaB, n);
     srand(time(NULL)); //Seta a seed da funcao rand()
+    int times = 1;
     while (!isEmpty(pilhaA) && !isEmpty(pilhaB)){//Enquanto nenhum dos dois perde, o jogo repete e printa os resultados
-        printf("%d ", etapa(pilhaA, pilhaB));
+        //loader();
+        printf("Etapa %d: \nOs jogadores estão escolhendo...\n", times);
+        
+        sleep(1.5);
+        printf("Resultado: %d\n", etapa(pilhaA, pilhaB));
+        sleep(1.5);
+        times++;
     }
-    printf("\n");
     //verificação de vitória
     if (isEmpty(pilhaA) && isEmpty(pilhaB)){
         printf("Empate!\n");
