@@ -87,7 +87,7 @@ void insertName(char names[][W_MAX], char name[]){
         sinal = -1;
         for (int i = posInicial; i > posFinal; i+=sinal){
             if (isGap(names[i])){
-                if (i-1 > posFinal && isGap(names[i-1])){
+                if (i-1 > posFinal && isGap(names[i-1]) && i!= posInicial && name[0]!='O'){
                     strcpy(names[i-1], name);
                     sortSection(names, posFinal, posInicial);
                     return;
@@ -104,7 +104,7 @@ void insertName(char names[][W_MAX], char name[]){
     else{
         for (int i = posInicial; i < posFinal; i+=sinal){
             if (isGap(names[i])){
-                if (i+1 < posFinal && isGap(names[i+1])){
+                if (i+1 < posFinal && isGap(names[i+1]) && i!= posInicial && name[0]!='N'){
                     strcpy(names[i+1], name);
                     sortSection(names, posInicial, posFinal);
                     return;
@@ -132,9 +132,10 @@ int deleteNameWName(char names[][W_MAX], char name[]){
     }
     return 0;
 }
-void deleteNameWPos(char names[][W_MAX], int pos){
+int deleteNameWPos(char names[][W_MAX], int pos){
+    if(isGap(names[pos])) return 0;
     emptyWord(names[pos]);
-    return;
+    return 1;
 }
 
 
@@ -174,10 +175,11 @@ int main(){
     fillGaps(listaAlfabetica);
     int loop=1;
     int selecao;
+    int index;
     char aux[W_MAX];
     while(loop){
         printf("Questão 1 - SEMANA 2\n");
-        printf("Digite seu comando e aperte enter:\n1 - Inserir nome\n2 - Deletar nome\n3 - Mostrar lista com gaps\n4 - Mostrar lista sem gaps\n5 - Verificar detalhe da questão\n");
+        printf("Digite seu comando e aperte enter:\n1 - Inserir nome\n2 - Deletar nome pelo nome\n3 - Deletar nome pelo índice\n4 - Mostrar lista com gaps\n5 - Mostrar lista sem gaps\n6 - Verificar detalhe da questão\n");
         scanf(" %d", &selecao);
         switch (selecao)
         {
@@ -196,16 +198,25 @@ int main(){
             else printf("Nome não existente na lista!\n");
             break;
         case 3:
-            display(listaAlfabetica);
+            printf("Digite o índice do nome que deseja deletar: ");
+            scanf(" %d", &index);
+            puts(" ");
+            if (deleteNameWPos(listaAlfabetica, index))printf("Nome deletado com sucesso!\n");
+            else printf("Nome não existente na lista!\n");
             break;
         case 4:
-            displayWoutGaps(listaAlfabetica);
+            display(listaAlfabetica);
             break;
         case 5:
+            displayWoutGaps(listaAlfabetica);
+            break;
+        case 6:
             printf("Questão do tipo:\n5: os gaps devem ocorrer preferencialmente no meio da sequência separados\n");
             puts("");
             break;
         default:
+            printf("Operação não reconhecida.\n");
+            puts("");
             break;
         }
     }
