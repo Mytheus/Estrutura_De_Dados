@@ -116,7 +116,6 @@ void insertName(char names[][W_MAX], char name[]){
                 }
             }
         }
-        
     }
 }
 
@@ -132,6 +131,7 @@ int deleteNameWName(char names[][W_MAX], char name[]){
     }
     return 0;
 }
+
 int deleteNameWPos(char names[][W_MAX], int pos){
     if(isGap(names[pos])) return 0;
     emptyWord(names[pos]);
