@@ -89,6 +89,7 @@ void display(grafo *gr){
 void visitaP(grafo* gr, int i, int *cor /*, int inf*/) { //Usa cores pra representar grafos que já foram analisados ou não, na prática: BRANCO: 0, AMARELO: 1, VERMELHO: 2
     //if (gr->adj[i].inf == inf) return 1; //Caso encontre a busca pelo item
     cor[i] = AMARELO; // Pinta de amarelo pois está sendo analisado
+    printf("V%d->", i+1);
     adjacencia *v = gr->adj[i].head; // Pega a lista de adjacências(arestas/ligações) do vértice que ta analisando
     while (v){ //Enquanto tiver adjacências
         if (cor[v->vertice]==BRANCO){ // Se não tiver sido analisado posteriormente
@@ -111,6 +112,7 @@ void profundidade(grafo* gr/*, int inf*/){ //Função principal
         {
             //if(visitaP(gr, i, cor, inf)) return 1; // Caso a busca verifique a existencia
             visitaP(gr, i, cor); //chama para inicar a busca para cada vértice, ocorre pois podem haver vértices inacessíveis
+            printf("\n");
         }
     }
 }
@@ -138,16 +140,17 @@ int main(){
     }
 
     display(grafo);
-    int busca;
-    for (int i = 0; i < grafo->vertices;i++){
-        printf("%d\n", grafo->adj[i].inf);
-    }
-    while (1)
-    {
-       printf("Digite o termo para bucar: ");
-       scanf(" %d", &busca);
-       profundidade(grafo);
-    }
+    profundidade(grafo);
+    // int busca;
+    // for (int i = 0; i < grafo->vertices;i++){
+    //     printf("%d\n", grafo->adj[i].inf);
+    // }
+    // while (1)
+    // {
+    //    printf("Digite o termo para bucar: ");
+    //    scanf(" %d", &busca);
+    //    profundidade(grafo);
+    // }
     
 
     return 0;
