@@ -80,8 +80,8 @@ void shufflePilha(Pilha* baralho){
 }
 
 void preenchePilha(Pilha* pilha, int n){
-    for (int i =1; i <= n; i++){
-        push(pilha, i);
+    for (int i = 0; i < n; i++){
+        push(pilha, (i%13)+1);
     }
 }
 
