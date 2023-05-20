@@ -22,6 +22,16 @@ int ordemAlfabetica(char word1[], char word2[]){
     }
 }
 
+
+int verificaNome(char *string){
+    for (int i = 0; i < strlen(string);i++){
+        if (isalpha(string[i])==0 && !isspace(string[i])){
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void stringToUpper(char word[]){
     for (int i = 0; i <  strlen(word); i++){
         word[i] = toupper(word[i]);
@@ -49,6 +59,19 @@ int isGap(char word[]){
     return word[0]=='\0';
 }
 
+int isFull(char names[][W_MAX]){
+    for (int i = 0; i < TAM_LISTA; i++){
+        if (isGap(names[i])) return 0;
+    }
+    return 1;
+}
+
+int isEmpty(char names[][W_MAX]){
+    for (int i = 0; i < TAM_LISTA; i++){
+        if (!isGap(names[i])) return 0;
+    }
+    return 1;
+}
 
 int gapInSection(char names[][W_MAX], int inic, int final){
     for (int i =inic; i < final; i++){
@@ -59,8 +82,15 @@ int gapInSection(char names[][W_MAX], int inic, int final){
     return -1;
 }
 
-
-
+int delete(char names[][W_MAX]){
+    for (int i = 0; i < TAM_LISTA; i++){
+        if (!isGap(names[i])){
+            emptyWord(names[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void sortSection(char names[][W_MAX], int inic, int final){
     for (int j = inic; j <= final; j++){
@@ -116,6 +146,7 @@ void insertName(char names[][W_MAX], char name[]){
                 }
             }
         }
+        
     }
 }
 
@@ -179,18 +210,30 @@ int main(){
     char aux[W_MAX];
     while(loop){
         printf("Questão 1 - SEMANA 2\n");
-        printf("Digite seu comando e aperte enter:\n1 - Inserir nome\n2 - Deletar nome pelo nome\n3 - Deletar nome pelo índice\n4 - Mostrar lista com gaps\n5 - Mostrar lista sem gaps\n6 - Verificar detalhe da questão\n");
+        printf("Digite seu comando e aperte enter:\n1 - Inserir nome\n2 - Deletar nome pelo nome\n3 - Deletar nome pelo índice\n4 - Deletar primeira ocorrência\n5 - Mostrar com gaps\n6 - Mostrar sem gaps\n7 - Verificar detalhe da questão\n");
         scanf(" %d", &selecao);
         switch (selecao)
         {
         case 1:
+            if(isFull(listaAlfabetica)){
+                printf("Lista cheia!\n");
+                break;
+            }
             printf("Digite o nome que deseja adicionar: ");
             scanf(" %[^\n]", aux);
             puts(" ");
-            insertName(listaAlfabetica, aux);
+            if (verificaNome(aux)) insertName(listaAlfabetica, aux);
+            else{
+                printf("Nome inválido!\n");
+                break;
+            }
             printf("Nome inserido com sucesso!\n");
             break;
         case 2:
+            if(isEmpty(listaAlfabetica)){
+                printf("Lista vazia!\n");
+                break;
+            }
             printf("Digite o nome que deseja deletar: ");
             scanf(" %[^\n]", aux);
             puts(" ");
@@ -198,19 +241,32 @@ int main(){
             else printf("Nome não existente na lista!\n");
             break;
         case 3:
+            if(isEmpty(listaAlfabetica)){
+                printf("Lista vazia!\n");
+                break;
+            }
             printf("Digite o índice do nome que deseja deletar: ");
             scanf(" %d", &index);
             puts(" ");
             if (deleteNameWPos(listaAlfabetica, index))printf("Nome deletado com sucesso!\n");
-            else printf("Nome não existente na lista!\n");
+            else printf("Não há nome neste espaço!\n");
             break;
         case 4:
-            display(listaAlfabetica);
+            if(isEmpty(listaAlfabetica)){
+                printf("Lista vazia!\n");
+                break;
+            }
+            puts(" ");
+            if (delete(listaAlfabetica))printf("Nome deletado com sucesso!\n");
+            else printf("Lista vazia!\n");
             break;
         case 5:
-            displayWoutGaps(listaAlfabetica);
+            display(listaAlfabetica);
             break;
         case 6:
+            displayWoutGaps(listaAlfabetica);
+            break;
+        case 7:
             printf("Questão do tipo:\n5: os gaps devem ocorrer preferencialmente no meio da sequência separados\n");
             puts("");
             break;
