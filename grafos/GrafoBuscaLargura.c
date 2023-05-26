@@ -152,6 +152,7 @@ void visitaL(grafo* gr, int i, int *cor){
     cor[i] = VERMELHO; // Define o inicial como explorado
     while (!isEmpty(fila)){ // Enquanto a fila não estiver vazia
         aux = deleteValue(&fila); // Armazena e deleta o primeiro da lista
+        printf("V%d ->", aux+1);
         adjacencia* filhos = gr->adj[aux].head; // Lista de filhos (adjacências)
         while(filhos){ // Percorre os filhos
             if (cor[filhos->vertice]==BRANCO){ // Se não foi explorado
@@ -161,6 +162,7 @@ void visitaL(grafo* gr, int i, int *cor){
             filhos = filhos->prox; // Prox adjacência
         }
     }
+    puts("");
 }
 
 void largura(grafo* grafo){
