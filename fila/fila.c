@@ -54,6 +54,8 @@ int main(){
     insertValue(&fila, 10);
     insertValue(&fila, 9);
     deleteValue(&fila);
+    deleteValue(&fila);
     display(fila);
+    printf("%d", fila==NULL);
     return 0;
 }

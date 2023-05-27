@@ -24,7 +24,6 @@ typedef struct Processo{ //Processo: Guarda elevador do processo, andar de desti
     int elevador;
     int andarDestino;
     int andarFonte;
-    int distanciaPercorrida;
     statusProcesso FouD;
 } Processo;
 
@@ -56,19 +55,6 @@ Processo* deleteProcesso(Fila** fila){
     (*fila) = (*fila)->next;
     free(aux);
     return retorno;
-}
-
-int size(Fila* fila){
-    int qntd = 0;
-    while(fila){
-        qntd++;
-        fila= fila->next;
-    }
-    return qntd;
-}
-
-int isEmpty(Fila* fila){
-    return !fila;
 }
 
 //Inicializador do elevador, começa em standby
@@ -104,7 +90,6 @@ void initializeProcesso(Processo* processo, int elevador,int andarFonte, int and
     processo->andarFonte = andarFonte;
     processo->elevador = elevador;
     processo->FouD = FouD;
-    processo->distanciaPercorrida = 0;
 }
 
 //Funções para movimento do elevador: Subida, descida, para a direita e para a esquerda.
@@ -287,21 +272,19 @@ void chamadas(int matriz[nCorredores][nAndares]){
     puts("SISTEMA DE ELEVADORES");
     char c;
     Fila* processos = NULL;
-    Fila* espera = NULL;
     int ativos = 0; //Processos ativos atualmente
     while (1){
         int finalizados = 0; //Processos finalizados (Impede que a finalização de um processo diminua o tamanho do for)
         for (int i = 0; i < ativos; i++){ //Repete a leitura de processos apenas pela quantidade de processos ativos, e não até a fila esvaziar.
             Processo* processo = deleteProcesso(&processos); //Leio e retiro o primeiro processo da fila
             if(!runProcesso(matriz, processo)){ //Executa processo. Se não foi finalizado:
-                processo->distanciaPercorrida++;
                 if (distEntreAndares(elevadores[findNearestElevator(processo->andarDestino)].andar, processo->andarDestino)<distEntreAndares(elevadores[processo->elevador].andar, processo->andarDestino) && processo->FouD==fonte){ //Verifica a possibilidade de encontrar um elevador mais próximo que o do processo ao andar de fonte da chamada. Permite que chame elevadores recém desativados mais próximos.
                     desativarElevador(processo->elevador);
                     processo->elevador = findNearestElevator(processo->andarDestino);
                 }
                 insertProcesso(&processos, processo); //Reinsiro o processo no final da fila
-
             }
+            
             else{ //Caso tenha finalizado
                 if (processo->FouD == fonte){ //Se finalizou a estapa de deslocamento até a chamada, troco o status e inicia a ida até o destino 
                     processo->FouD = destino;
@@ -310,7 +293,6 @@ void chamadas(int matriz[nCorredores][nAndares]){
                 }
                 else{ //Se finalizou a chamada completa (até a fonte e até o destino) desativa o elevador e aumenta o número de finalizados.
                     desativarElevador(processo->elevador);
-                    printf("Distância percorrida pela chamada %d: %d unidades de deslocamento\n", processo->elevador+1, processo->distanciaPercorrida);
                     free(processo);
                     finalizados++;
                 }
@@ -323,6 +305,7 @@ void chamadas(int matriz[nCorredores][nAndares]){
         scanf(" %c", &c);
         
         if (c=='s' || c=='S'){ //Caso tenha uma nova chamada:
+            ativos++; //Ativa mais um processo
             int andarSource, andarDestino;
             printf("Informe andar de origem e andar de destino: "); //Recebe andares de fonte e destino
             scanf(" %d %d", &andarSource, &andarDestino);
@@ -331,31 +314,13 @@ void chamadas(int matriz[nCorredores][nAndares]){
                 printf("Entrada inválida\nInforme andar de origem e andar de destino (prédio de 300 andares): ");
                 scanf(" %d %d", &andarSource, &andarDestino);
             }
+
+            int elevador = findNearestElevator(andarSource); //Encontra elevador mais próximo
+            ativarElevador(elevador); //Ativa-o
             Processo* processo = malloc(sizeof(processo)); //Aloca espaço para o processo
-            initializeProcesso(processo, -1, andarDestino, andarSource, fonte); //Inicializa o processo
-            insertProcesso(&espera, processo); //Insere o processo na fila de execução
-            if (size(processos)< nElevadores){
-                ativos++; //Ativa mais um processo
-                Processo* processo = deleteProcesso(&espera); //Aloca espaço para o processo
-                int elevador = findNearestElevator(processo->andarDestino); //Encontra elevador mais próximo
-                ativarElevador(elevador); //Ativa-o
-                //printf("\nTamanho de espera: %d\nTá vazia? %s\n", size(espera),(espera==NULL?"sim":"não"));
-                processo->elevador = elevador;
-                insertProcesso(&processos, processo); //Insere o processo na fila de execução
-            }
+            initializeProcesso(processo, elevador, andarDestino, andarSource, fonte); //Inicializa o processo
+            insertProcesso(&processos, processo); //Insere o processo na fila de execução
         }
-        else{
-            if (size(processos)< nElevadores && !isEmpty(espera)){
-                ativos++; //Ativa mais um processo
-                Processo* processo = deleteProcesso(&espera); //Aloca espaço para o processo
-                int elevador = findNearestElevator(processo->andarDestino); //Encontra elevador mais próximo
-                ativarElevador(elevador); //Ativa-o
-                //printf("\nTamanho de espera: %d\nTá vazia? %s\n", size(espera),(espera==NULL?"sim":"não"));
-                processo->elevador = elevador;
-                insertProcesso(&processos, processo); //Insere o processo na fila de execução
-            }
-        }
-        //printf("Tamanho processos: %d\nTamanho espera: %d\n", size(processos), size(espera));
         displayElevadores();
     }
 }
