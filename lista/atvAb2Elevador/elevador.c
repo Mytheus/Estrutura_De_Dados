@@ -71,9 +71,9 @@ void initializePredio(int matriz[nCorredores][nAndares]){
     int pos[nElevadores] = {10, 30, 50, 70, 90, 110 ,130, 150, 170, 190, 210, 230, 250, 270, 290}; //Posições iniciais dos elevadores
     int index = 0, elevador = 0, corredor = 0;
 
-    for (int i = 0; i < nAndares; i++){
+    for (int i = 0; i <= nAndares; i++){
         for (int u = 0; u < nCorredores; u++){
-            if (i == pos[index]-1 && u == corredor%3){ //Coloca nos andares predefinidos intercalando corredores.
+            if (i == pos[index] && u == corredor%3){ //Coloca nos andares predefinidos intercalando corredores.
                 matriz[u][i] = elevador;
                 initializeElevador(&elevadores[elevador], i, u);
                 elevador++;
@@ -96,7 +96,7 @@ void initializeProcesso(Processo* processo, int elevador,int andarFonte, int and
 //Funções para movimento do elevador: Subida, descida, para a direita e para a esquerda.
 //Têm em cada um deles também as verificações de limites e colisão com outros elevadores, retornando 0 sempre que não for possível realizar o movimento.
 int subirElevador(int matriz[nCorredores][nAndares], int elevador){
-    if (elevadores[elevador].andar==nAndares-1) return 0;
+    if (elevadores[elevador].andar==nAndares) return 0;
     if (matriz[elevadores[elevador].corredor][elevadores[elevador].andar+1] != -1) return 0;
 
     matriz[elevadores[elevador].corredor][elevadores[elevador].andar] = -1;
@@ -170,6 +170,16 @@ void desativarElevador(int elevador){
     elevadores[elevador].statusElev = standby;
 }
 
+int procuraCaminhoLivre(int matriz[nCorredores][nAndares], int andarObstruido, int elevador){
+    int corredorElevador = elevadores[elevador].corredor;
+    for (int i = 0; i < nCorredores; i++){
+        if (matriz[i][andarObstruido]==-1){
+            return (i<corredorElevador? 0:1);
+        }
+    }
+    return -1;
+}
+
 //Lê o processo e realiza uma ação dependendo do processo.
 int runProcesso(int matriz[nCorredores][nAndares], Processo* processo){
     if (elevadores[processo->elevador].andar == processo->andarDestino){
@@ -177,16 +187,40 @@ int runProcesso(int matriz[nCorredores][nAndares], Processo* processo){
     }
     else if (elevadores[processo->elevador].andar < processo->andarDestino){ //Caso seja subida
         if (matriz[elevadores[processo->elevador].corredor][elevadores[processo->elevador].andar+1] != -1){ //Verificação de colisão
-            if (!deslocarElevadorDireita(matriz, processo->elevador)) if (!deslocarElevadorEsquerda(matriz, processo->elevador)) //Tenta desviar para a direita ou para a esquerda para evitar colisão.
-            return 0; //Se não conseguir, não sobe.
+            if (procuraCaminhoLivre(matriz, elevadores[processo->elevador].andar+1, processo->elevador)==0){
+                if (!deslocarElevadorEsquerda(matriz, processo->elevador)){
+                    if (!deslocarElevadorDireita(matriz, processo->elevador)) return 0;
+                }
+            }
+            else if(procuraCaminhoLivre(matriz, elevadores[processo->elevador].andar+1, processo->elevador)==1){
+                if (!deslocarElevadorDireita(matriz, processo->elevador)){
+                    if (!deslocarElevadorEsquerda(matriz, processo->elevador)) return 0;
+                }
+            }
+            else{
+                puts("Não há desvios disponíveis");
+                return 0;
+            }
         }
         else subirElevador(matriz, processo->elevador); //Caso não houver colisão iminente, sobe
         return 0;
     }
     else {//Caso seja descida
         if (matriz[elevadores[processo->elevador].corredor][elevadores[processo->elevador].andar-1] != -1){ //Verificação de colisão
-            if (!deslocarElevadorDireita(matriz, processo->elevador)) if (!deslocarElevadorEsquerda(matriz, processo->elevador)) //Tenta desviar para a direita ou para a esquerda para evitar colisão.
-            return 0; //Se não conseguir, não desce
+            if (procuraCaminhoLivre(matriz, elevadores[processo->elevador].andar-1, processo->elevador)==0){
+                if (!deslocarElevadorEsquerda(matriz, processo->elevador)){
+                    if (!deslocarElevadorDireita(matriz, processo->elevador)) return 0;
+                }
+            }
+            else if(procuraCaminhoLivre(matriz, elevadores[processo->elevador].andar-1, processo->elevador)==1){
+                if (!deslocarElevadorDireita(matriz, processo->elevador)){
+                    if (!deslocarElevadorEsquerda(matriz, processo->elevador)) return 0;
+                }
+            }
+            else{
+                puts("Não há desvios disponíveis");
+                return 0;
+            }
         }
         else descerElevador(matriz, processo->elevador); //Caso não houver colisão iminente, desce
         return 0;
@@ -197,7 +231,7 @@ int runProcesso(int matriz[nCorredores][nAndares], Processo* processo){
 //Encontra o elevador mais próximo de determinado andar
 int findNearestElevator(int andar){
     int nearest = 0;
-    int menorDist = 300;
+    int menorDist = 301;
     for (int i = 0; i < nElevadores; i++){
         if (abs(elevadores[i].andar-andar)<menorDist && elevadores[i].statusElev == standby){
             menorDist = abs(elevadores[i].andar-andar);
@@ -215,6 +249,26 @@ int distEntreElevadores(int elevador1, int elevador2){
 //Retorna a distância entre dois andares
 int distEntreAndares(int andar1, int andar2){
     return abs(andar1 - andar2);
+}
+
+
+void displayPredio(int matriz[nCorredores][nAndares]){
+    for (int i = nAndares-1; i >= 0; i--){
+        printf("%d:\t", i+1);
+        for (int u = 0; u < nCorredores; u++){
+            printf("|\t%d\t|", matriz[u][i]);
+        }
+        puts("");
+        puts("\t-------------------------------------------------");
+    }
+}
+
+void displayElevadores(){
+    //Display da situação atual dos elevadores
+    for (int i = 0; i < nElevadores; i++){
+        printf("Elevador %d: Andar: %d Corredor: %d\n", i+1 ,elevadores[i].andar, elevadores[i].corredor+1);
+    }
+    puts("");
 }
 
 //Gerencia as chamadas do sistema
@@ -260,41 +314,29 @@ void chamadas(int matriz[nCorredores][nAndares]){
             printf("Informe andar de origem e andar de destino: "); //Recebe andares de fonte e destino
             scanf(" %d %d", &andarSource, &andarDestino);
 
-            while (andarSource < 1 || andarSource > 300 || andarDestino > 300 || andarDestino < 1){ //Verifica limites
+            while (andarSource < 0 || andarSource > 300 || andarDestino > 300 || andarDestino < 0){ //Verifica limites
                 printf("Entrada inválida\nInforme andar de origem e andar de destino (prédio de 300 andares): ");
                 scanf(" %d %d", &andarSource, &andarDestino);
             }
 
-            int elevador = findNearestElevator(andarSource-1); //Encontra elevador mais próximo
+            int elevador = findNearestElevator(andarSource); //Encontra elevador mais próximo
             ativarElevador(elevador); //Ativa-o
             Processo* processo = malloc(sizeof(processo)); //Aloca espaço para o processo
-            initializeProcesso(processo, elevador, andarDestino-1, andarSource-1, fonte); //Inicializa o processo
+            initializeProcesso(processo, elevador, andarDestino, andarSource, fonte); //Inicializa o processo
             insertProcesso(&processos, processo); //Insere o processo na fila de execução
         }
-        //Display da situação atual dos elevadores
-        for (int i = 0; i < nElevadores; i++){
-            printf("Elevador %d: Andar: %d Corredor: %d\n", i+1 ,elevadores[i].andar+1, elevadores[i].corredor+1);
-        }
-        puts("");
+        displayElevadores();
     }
 }
 
 
 
-void displayPredio(int matriz[nCorredores][nAndares]){
-    for (int i = nAndares-1; i >= 0; i--){
-        printf("%d:\t", i+1);
-        for (int u = 0; u < nCorredores; u++){
-            printf("|\t%d\t|", matriz[u][i]);
-        }
-        puts("");
-        puts("\t-------------------------------------------------");
-    }
-}
+
 
 int main(){
     int predio[nCorredores][nAndares];
     initializePredio(predio);
+    displayPredio(predio);
     chamadas(predio);
     // deslocamento(predio, 0, 69);
     // displayPredio(predio);
