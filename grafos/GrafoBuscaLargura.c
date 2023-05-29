@@ -27,6 +27,7 @@ typedef struct grafo{
 /*FILA*/
 typedef struct Fila {
     int inf;
+    int dist;
     struct Fila* next;
 } Fila;
 
@@ -38,12 +39,13 @@ Fila* initFila(){
     return NULL;
 }
 
-void insertValue(Fila** fila, int inf){
+void insertValue(Fila** fila, int inf, int dist){
     while((*fila)){
         fila=&((*fila)->next);
     }
     (*fila) = getNode();
     (*fila)->inf = inf;
+    (*fila)->dist = dist;
     (*fila)->next = NULL;
 }
 
@@ -78,11 +80,6 @@ int size(Fila* fila){
 int isEmpty(Fila* fila){
     return !fila;
 }
-
-
-
-
-
 
 grafo* criaGrafo(int v){
     grafo* g = malloc(sizeof(grafo)); //Aloca espaço para o grafo
@@ -145,34 +142,44 @@ Inserindo-os numa fila, você garante que não explorará os vértices adjacente
 vértices adjantes do vértice atual, uma vez que eles seguirão a ordem da fila.
 */
 //visitaL(Grafo, vértice inicial, lista de cores))
-void visitaL(grafo* gr, int i, int *cor){
+int visitaL(grafo* gr, int i, int *cor, int procurado){
     int aux;
+    int caminho = 0;
     Fila* fila = initFila(); // Cria fila
-    insertValue(&fila, i); // Insere o inicial
+    insertValue(&fila, i, 0); // Insere o inicial
     cor[i] = VERMELHO; // Define o inicial como explorado
     while (!isEmpty(fila)){ // Enquanto a fila não estiver vazia
+        int dist = fila->dist;
         aux = deleteValue(&fila); // Armazena e deleta o primeiro da lista
-        printf("V%d ->", aux+1);
+        printf("V%d", aux+1);
+        if (aux == procurado){
+            return dist;
+        }
+        printf("->");
+        dist++;
         adjacencia* filhos = gr->adj[aux].head; // Lista de filhos (adjacências)
         while(filhos){ // Percorre os filhos
             if (cor[filhos->vertice]==BRANCO){ // Se não foi explorado
                 cor[filhos->vertice]=VERMELHO; // Marca como explorado
-                insertValue(&fila, filhos->vertice); // Insere na fila
+                insertValue(&fila, filhos->vertice, dist); // Insere na fila
             }
             filhos = filhos->prox; // Prox adjacência
         }
     }
     puts("");
+    return -1;
 }
 
-void largura(grafo* grafo){
+int largura(grafo* grafo, int inf){
     int cor[grafo->vertices]; // Lista de verificação
     for (int i = 0; i < grafo->vertices; i++){
         cor[i] = BRANCO;
     } // Inicializa
     for (int i = 0; i < grafo->vertices; i++){ // Garante que visitou todos os grafos, mesmo os inacessíveis
         if (cor[i]==BRANCO){
-            visitaL(grafo, i, cor); 
+            int res = visitaL(grafo, i, cor, inf);
+            puts("");
+            if (res!=-1) return res; 
             printf("\n");
         }
     }   
@@ -180,7 +187,7 @@ void largura(grafo* grafo){
 
 
 int main(){
-    int n, destino, peso;
+    int n, destino, peso, busca;
     printf("Quantas vértices no grafo?: ");
     scanf(" %d", &n);
     grafo* grafo = criaGrafo(n);
@@ -198,7 +205,8 @@ int main(){
         destino = 0;
     }
     display(grafo);
-    int cor[10] = {0,0,0,0,0,0,0,0,0,0};
-    visitaL(grafo, 0, cor);
+    printf("Digite o vértice que deseja buscar: ");
+    scanf(" %d", &busca);
+    printf("Menor distância ao vértice %d: %d\n", busca, largura(grafo, busca-1));
     return 0;
 }
