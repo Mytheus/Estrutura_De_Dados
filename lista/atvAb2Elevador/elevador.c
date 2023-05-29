@@ -300,9 +300,9 @@ int congestionado(int matriz[nCorredores][nAndares], int andar){
     int qntdElevadoresAndarAcima = elevadoresAndar(matriz, andar+1);
     int qntdElevadoresAndarAbaixo = elevadoresAndar(matriz, andar-1);
     if (qntdElevadoresAndar==3) return 1; //Três elevadores num andar
-    if (qntdElevadoresAndar>1 && qntdElevadoresAndarAcima>1 ||qntdElevadoresAndar>1 && qntdElevadoresAndarAbaixo>1) return 1; //Elevadores parados muito próximos
+    if ((qntdElevadoresAndar>1 && qntdElevadoresAndarAcima>1) || (qntdElevadoresAndar>1 && qntdElevadoresAndarAbaixo>1)) return 1; //Elevadores parados muito próximos
     if (qntdElevadoresAndar==1 && qntdElevadoresAndarAcima==1 && qntdElevadoresAndarAbaixo==1) return 1; //Três andares seguidos de elevador (escadinha)
-    if (qntdElevadoresAndar==1 && qntdElevadoresAndarAcima>1 || qntdElevadoresAndar==1 && qntdElevadoresAndarAbaixo>1) return 1;
+    if ((qntdElevadoresAndar==1 && qntdElevadoresAndarAcima>1) || (qntdElevadoresAndar==1 && qntdElevadoresAndarAbaixo>1)) return 1;
     return 0;
 }
 
