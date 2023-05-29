@@ -14,7 +14,7 @@ int particiona(int array[], int inicio, int fim){
     int dir = fim;
     int esq = inicio;
     //escolhe o pivo como o primeiro
-    int pivo = array[inicio];
+    int pivo = array[(inicio+fim)/2];
     //enquanto o indice da dir nao ta atras do da esq
     while (dir > esq){
         //move pra direita ate achar numero maior que o pivo ou o fim do array
@@ -29,7 +29,7 @@ int particiona(int array[], int inicio, int fim){
         if (esq<dir)swap(&array[dir], &array[esq]);
     }
     //Troca o pivo do inicio pra dir
-    swap(&array[dir], &array[inicio]);
+    swap(&array[dir], &array[(inicio+fim)/2]);
     //nova pos do pivo
     pivo = dir;
     return pivo;

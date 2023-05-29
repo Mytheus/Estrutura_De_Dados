@@ -60,13 +60,21 @@ void mergeSort(int array[], int inicio, int fim){
         merge(array, inicio, meio, fim);
     }
 }
-
+void mergeSortMelhorado(int array[], int inicio, int fim){
+    int meio;
+    if (inicio<fim){
+        meio = (inicio+fim)/2;
+        mergeSort(array, inicio, meio);
+        mergeSort(array, meio+1, fim);
+        if (array[meio]>array[meio+1])merge(array, inicio, meio, fim);
+    }
+}
 int main(){
     int vetor[10];
     for (int i =0; i< 10; i++){
         scanf("%d", &vetor[i]);
     }
-    mergeSort(vetor, 0, 9);
+    mergeSortMelhorado(vetor, 0, 9);
     for (int j=0; j < 10; j++){
         printf("%d ", vetor[j]);
     }

@@ -83,7 +83,7 @@ node* deleteFirst(node* head){
     }
     else if(head->link == NULL){
         free(head);
-        head == NULL;
+        head = NULL;
     }
     else{
         node* temp = head;
@@ -148,6 +148,7 @@ node* deleteAtIndex(node* head, int index){
 
 
 int main(){
+
     node *head = malloc(sizeof(node));
     head->data = 45;
     head->link= NULL;

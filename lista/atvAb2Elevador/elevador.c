@@ -17,6 +17,7 @@ typedef enum statusProcesso {fonte, destino} statusProcesso; //Status do process
 typedef struct Elevador{  //Elevador: Guarda informação do andar, corredor e o status do elevador
     int andar;
     int corredor;
+    int posInicial;
     status statusElev;
 } Elevador;
 
@@ -72,9 +73,10 @@ int isEmpty(Fila* fila){
 }
 
 //Inicializador do elevador, começa em standby
-void initializeElevador(Elevador* elevador, int andar, int corredor){
+void initializeElevador(Elevador* elevador, int andar, int corredor, int posInicial){
     elevador->andar = andar;
     elevador->corredor = corredor;
+    elevador->posInicial = posInicial;
     elevador->statusElev = standby;
 }
 
@@ -88,7 +90,7 @@ void initializePredio(int matriz[nCorredores][nAndares]){
         for (int u = 0; u < nCorredores; u++){
             if (i == pos[index] && u == corredor%3){ //Coloca nos andares predefinidos intercalando corredores.
                 matriz[u][i] = elevador;
-                initializeElevador(&elevadores[elevador], i, u);
+                initializeElevador(&elevadores[elevador], i, u, pos[index]);
                 elevador++;
                 index++;
                 corredor++;
@@ -282,9 +284,45 @@ void displayElevadores(){
     puts("");
 }
 
+
+int elevadoresAndar(int matriz[nCorredores][nAndares], int andar){
+    if (andar<0 || andar>300) return 0;
+    int cont = 0;
+    for (int i = 0; i < nCorredores; i++){
+        if (matriz[i][andar]!=-1)cont++;
+    }
+    return cont;
+}
+
+int congestionado(int matriz[nCorredores][nAndares], int andar){
+    if (andar<0 || andar>300) return 0;
+    int qntdElevadoresAndar = elevadoresAndar(matriz, andar);
+    int qntdElevadoresAndarAcima = elevadoresAndar(matriz, andar+1);
+    int qntdElevadoresAndarAbaixo = elevadoresAndar(matriz, andar-1);
+    if (qntdElevadoresAndar==3) return 1; //Três elevadores num andar
+    if (qntdElevadoresAndar>1 && qntdElevadoresAndarAcima>1 ||qntdElevadoresAndar>1 && qntdElevadoresAndarAbaixo>1) return 1; //Elevadores parados muito próximos
+    if (qntdElevadoresAndar==1 && qntdElevadoresAndarAcima==1 && qntdElevadoresAndarAbaixo==1) return 1; //Três andares seguidos de elevador (escadinha)
+    if (qntdElevadoresAndar==1 && qntdElevadoresAndarAcima>1 || qntdElevadoresAndar==1 && qntdElevadoresAndarAbaixo>1) return 1;
+    return 0;
+}
+
+
+void evitaBloqueio(int matriz[nCorredores][nAndares]){
+    for (int i = 0; i < nElevadores; i++){
+        if (elevadores[i].statusElev==standby && elevadores[i].andar!=elevadores[i].posInicial){
+            if (congestionado(matriz, elevadores[i].andar)){        
+                Processo* processo = malloc(sizeof(processo));
+                initializeProcesso(processo, i, elevadores[i].posInicial, elevadores[i].posInicial, destino);
+                runProcesso(matriz, processo);
+                free(processo);
+            }
+        }
+    }
+}
+
 //Gerencia as chamadas do sistema
 void chamadas(int matriz[nCorredores][nAndares]){
-    puts("SISTEMA DE ELEVADORES");
+    puts("SISTEMA DE ELEVADORES\nPRÉDIO DE 300 ANDARES E 3 CORREDORES");
     char c;
     Fila* processos = NULL;
     Fila* espera = NULL;
@@ -320,7 +358,8 @@ void chamadas(int matriz[nCorredores][nAndares]){
         
         //Interface de entrada
         printf("Chamada? (S ou s para SIM) ");
-        scanf(" %c", &c);
+        scanf("%c", &c);
+        puts("");
         
         if (c=='s' || c=='S'){ //Caso tenha uma nova chamada:
             int andarSource, andarDestino;
@@ -339,7 +378,6 @@ void chamadas(int matriz[nCorredores][nAndares]){
                 Processo* processo = deleteProcesso(&espera); //Aloca espaço para o processo
                 int elevador = findNearestElevator(processo->andarDestino); //Encontra elevador mais próximo
                 ativarElevador(elevador); //Ativa-o
-                //printf("\nTamanho de espera: %d\nTá vazia? %s\n", size(espera),(espera==NULL?"sim":"não"));
                 processo->elevador = elevador;
                 insertProcesso(&processos, processo); //Insere o processo na fila de execução
             }
@@ -355,7 +393,7 @@ void chamadas(int matriz[nCorredores][nAndares]){
                 insertProcesso(&processos, processo); //Insere o processo na fila de execução
             }
         }
-        //printf("Tamanho processos: %d\nTamanho espera: %d\n", size(processos), size(espera));
+        evitaBloqueio(matriz);
         displayElevadores();
     }
 }
@@ -364,12 +402,7 @@ void chamadas(int matriz[nCorredores][nAndares]){
 int main(){
     int predio[nCorredores][nAndares];
     initializePredio(predio);
-    displayPredio(predio);
-    chamadas(predio);
-    // deslocamento(predio, 0, 69);
     // displayPredio(predio);
-    // for (int i = 0; i < nElevadores; i++){
-    //     printf("Elevador %d: Andar: %d Corredor: %d\n", i+1 ,elevadores[i].andar+1, elevadores[i].corredor+1);
-    // }
+    chamadas(predio);
     return 0;
 }
